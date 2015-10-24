@@ -649,7 +649,7 @@ def train_lstm(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="serps modeling")
-    parser.add_argument('-r', "--reload", type=bool, help="reload the model", default=False, action='store_true')
+    parser.add_argument('-r', "--reload", help="reload the model", default=False, action='store_true')
 
     args = parser.parse_args()
 
