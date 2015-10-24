@@ -438,7 +438,6 @@ def train_lstm(
     dispFreq=10,  # Display to stdout the training progress every N updates
     decay_c=0.,  # Weight decay for the classifier applied to the U weights.
     lrate=0.1,  # Learning rate for sgd (not used for adadelta and rmsprop)
-    n_words=10000,  # Vocabulary size
     optimizer=adadelta,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
     encoder='lstm',  # TODO: can be removed must be lstm.
     saveto='lstm_model.npz',  # The best model will be saved there
@@ -460,8 +459,7 @@ def train_lstm(
 
     load_data, prepare_data = get_dataset(dataset)
     print("dataset loaded")
-    n_words2, train, valid, test, dic = load_data(valid_portion=0.05, maxlen=maxlen)
-    n_words = min(n_words, n_words2)
+    n_words, train, valid, test, dic = load_data(valid_portion=0.05, maxlen=maxlen)
     model_options["n_words"] = n_words
 
     for x in [train, valid, test]:
