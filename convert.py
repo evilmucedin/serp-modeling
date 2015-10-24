@@ -42,7 +42,6 @@ for line in open("2015-10-01-False-SAT"):
         siteParts = site.split("|")
         if 3 == len(siteParts):
             sentence.append(int(siteParts[0]))
-    sentences.append(sentence)
 
     if random.randint(0, 10) < 8:
         train_x.append(sentence)
@@ -54,10 +53,10 @@ for line in open("2015-10-01-False-SAT"):
     iLine += 1
     
 with open("data.pkl", "wb") as f:
-    pkl.dump((train_x, train_y), f, -1)
-    pkl.dump((test_x, test_y), f, -1)
+    pickle.dump((train_x, train_y), f, -1)
+    pickle.dump((test_x, test_y), f, -1)
 
     revDict = {}
     for k, v in dictionary.items():
         revDict[v] = k
-    pkl.dump(revDict, f, -1)
+    pickle.dump(revDict, f, -1)
