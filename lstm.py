@@ -459,8 +459,7 @@ def train_lstm(
 
     load_data, prepare_data = get_dataset(dataset)
     print("dataset loaded")
-    n_words2, train, valid, test, dic = load_data(valid_portion=0.05, maxlen=maxlen)
-    n_words = min(n_words, n_words2)
+    n_words, train, valid, test, dic = load_data(valid_portion=0.05, maxlen=maxlen)
     model_options["n_words"] = n_words
     print("nWords: %d" % n_words)
 
