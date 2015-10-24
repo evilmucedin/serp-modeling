@@ -11,14 +11,6 @@ args = parser.parse_args()
 
 limit = args.limit
 
-dictionary = {}
-dictionary[0] = "<UNK>"
-index = 1
-for line in open("2015-10-01-False-TopHosts2"):
-    parts = line.split("\t")
-    dictionary[index] = parts[0]
-    index += 1
-
 train_x = []
 train_y = []
 test_x = []
@@ -52,11 +44,15 @@ for line in open("2015-10-01-False-SAT"):
 
     iLine += 1
     
+revDict = {}
+revDict[0] = "<UNK>"
+index = 1
+for line in open("2015-10-01-False-TopHosts2"):
+    parts = line.split("\t")
+    revDict[index] = parts[0]
+    index += 1
+
 with open("data.pkl", "wb") as f:
     pickle.dump((train_x, train_y), f, -1)
     pickle.dump((test_x, test_y), f, -1)
-
-    revDict = {}
-    for k, v in dictionary.items():
-        revDict[v] = k
     pickle.dump(revDict, f, -1)
