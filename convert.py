@@ -5,7 +5,7 @@ import argparse
 import random
 
 parser = argparse.ArgumentParser(description="prepare data for serps modeling")
-parser.add_argument('-l', "--limit", type=int, help="limir", default=max)
+parser.add_argument('-l', "--limit", type=int, help="limir", default=2**32)
 
 args = parser.parse_args()
 
@@ -35,12 +35,13 @@ for line in open("2015-10-01-False-SAT"):
         if 3 == len(siteParts):
             sentence.append(int(siteParts[0]))
 
-    if random.randint(0, 10) < 8:
-        train_x.append(sentence)
-        train_y.append(label)
-    else:
-        test_x.append(sentence)
-        test_y.append(label)
+    if 0 != len(sentence):
+        if random.randint(0, 10) < 8:
+            train_x.append(sentence)
+            train_y.append(label)
+        else:
+            test_x.append(sentence)
+            test_y.append(label)
 
     iLine += 1
     

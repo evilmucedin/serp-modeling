@@ -461,6 +461,7 @@ def train_lstm(
     print("dataset loaded")
     n_words, train, valid, test, dic = load_data(valid_portion=0.05, maxlen=maxlen)
     model_options["n_words"] = n_words
+    print("nWords: %d" % n_words)
 
     for x in [train, valid, test]:
         assert( len(x[0]) == len(x[1]) )
