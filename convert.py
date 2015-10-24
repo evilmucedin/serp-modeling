@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
 import pickle
+import argparse
+
+parser = argparse.ArgumentParser(description="prepare data for serps modeling")
+parser.add_argument('-l', "--limit", type=int, help="limir", default=max)
+
+args = parser.parse_args()
+
+limit = args.limit
 
 sentences = []
 labels = []
@@ -9,6 +17,9 @@ iLine = 0
 for line in open("2015-10-01-False-SAT"):
     if 0 == (iLine % 100000):
         print("... %d" % iLine)
+
+    if iLine > limit:
+        break
 
     parts = line.split("\t")
     
