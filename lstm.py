@@ -109,7 +109,7 @@ def init_params(options):
 
 def load_params(path, params):
     pp = numpy.load(path)
-    for kk, vv in params.iteritems():
+    for kk, vv in params.items():
         if kk not in pp:
             raise Warning('%s is not in the archive' % kk)
         params[kk] = pp[kk]
@@ -651,4 +651,5 @@ if __name__ == '__main__':
     train_lstm(
         max_epochs=100,
         test_size=5000,
+        reload_model=True
     )
