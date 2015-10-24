@@ -8,6 +8,7 @@ sys.path.append(".")
 from collections import OrderedDict
 import pickle as pkl
 import time
+import argparse
 
 import numpy
 import theano
@@ -647,9 +648,14 @@ def train_lstm(
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="prepare data for serps modeling")
+    parser.add_argument('-r', "--reload", type=bool, help="reload the model", default=False)
+
+    args = parser.parse_args()
+
     # See function train for all possible parameter and there definition.
     train_lstm(
         max_epochs=100,
         test_size=5000,
-        reload_model=True
+        reload_model=args.reload
     )
