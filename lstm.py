@@ -433,7 +433,7 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
 
 
 def train_lstm(
-    dim_proj=8,  # word embeding dimension and LSTM number of hidden units.
+    dim_proj=40,  # word embeding dimension and LSTM number of hidden units.
     patience=10,  # Number of epoch to wait before early stop if no progress
     max_epochs=5000,  # The maximum number of epoch to run
     dispFreq=10,  # Display to stdout the training progress every N updates
@@ -579,7 +579,8 @@ def train_lstm(
                     else:
                         params = unzip(tparams)
                     numpy.savez(saveto, history_errs=history_errs, **params)
-                    pkl.dump(model_options, open('%s.pkl' % saveto, 'wb'), -1)
+                    with open('%s.pkl' % saveto, 'wb') as fOut:
+                        pkl.dump(model_options, fOut, -1)
                     
                     with open("dump.txt", "w") as fOut:
                         for i, emb in enumerate(params['Wemb']):
@@ -650,7 +651,6 @@ def train_lstm(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="serps modeling")
     parser.add_argument('-r', "--reload", help="reload the model", default=False, action='store_true')
-
     args = parser.parse_args()
 
     # See function train for all possible parameter and there definition.

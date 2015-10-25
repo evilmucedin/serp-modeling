@@ -17,16 +17,18 @@ test_x = []
 test_y = []
 
 iLine = 0
+sumLabels = 0.0
 for line in open("2015-10-01-False-SAT"):
-    if 0 == (iLine % 100000):
-        print("... %d" % iLine)
+    if 0 == (iLine % 100000) and (iLine != 0):
+        print("... %d %f" % (iLine, sumLabels/iLine))
 
     if iLine > limit:
         break
 
     parts = line.split("\t")
     
-    label = int(parts[1])
+    label = float(parts[1])
+    sumLabels += label
 
     sentence = []
     sites = parts[2].split("*")
