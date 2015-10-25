@@ -48,32 +48,6 @@ def prepare_data(seqs, labels, maxlen=None):
     return x, x_mask, labels
 
 
-def get_dataset_file(dataset, default_dataset, origin):
-    '''Look for it as if it was a full path, if not, try local file,
-    if not try in the data directory.
-
-    Download dataset if it is not present
-
-    '''
-    data_dir, data_file = os.path.split(dataset)
-    if data_dir == "" and not os.path.isfile(dataset):
-        # Check if dataset is in the data directory.
-        new_path = os.path.join(
-            os.path.split(__file__)[0],
-            "..",
-            "data",
-            dataset
-        )
-        if os.path.isfile(new_path) or data_file == default_dataset:
-            dataset = new_path
-
-    if (not os.path.isfile(dataset)) and data_file == default_dataset:
-        import urllib
-        print('Downloading data from %s' % origin)
-        urllib.urlretrieve(origin, dataset)
-    return dataset
-
-
 def load_data(path="data.pkl", n_words=100000, valid_portion=0.1, maxlen=None, sort_by_len=True):
     '''Loads the dataset
 
@@ -100,8 +74,6 @@ def load_data(path="data.pkl", n_words=100000, valid_portion=0.1, maxlen=None, s
     #############
 
     # Load the dataset
-    path = get_dataset_file(path, "data.pkl", "http://www.iro.umontreal.ca/~lisa/deep/data/imdb.pkl")
-
     if path.endswith(".gz"):
         f = gzip.open(path, 'rb')
     else:

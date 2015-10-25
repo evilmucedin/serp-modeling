@@ -411,7 +411,7 @@ def pred_probs(f_pred_prob, prepare_data, data, iterator, verbose=False):
     return probs
 
 
-def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
+def pred_error(f_pred_prob, f_pred, prepare_data, data, iterator, verbose=False):
     """
     Just compute the error
     f_pred: Theano fct computing the prediction
@@ -419,21 +419,27 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
     """
     npData1 = numpy.array(data[1])
     valid_err = 0
+    sumPred = 0.0
+    sumPredprob = 0.0
+    lenPred = 0.0
     for _, valid_index in iterator:
         x, mask, y = prepare_data([data[0][t] for t in valid_index], npData1[valid_index], maxlen=None)
         preds = f_pred(x, mask)
+        sumPred += preds.sum()
+        sumPredProb += f_pred_prob(x, mask).sum()
+        lenPred += preds.shape[0]
         targets = npData1[valid_index]
         valid_err += (preds == targets).sum()
     valid_err = 1. - numpy_floatX(valid_err) / len(data[0])
 
-    return valid_err
+    return valid_err, sumPred/lenPred if 0 != lenPred else 0.0, sumPredProb/lenPred if 0 != lenPred else 0.0
 
 
 def train_lstm(
     dim_proj=40,  # word embeding dimension and LSTM number of hidden units.
     patience=10,  # Number of epoch to wait before early stop if no progress
     max_epochs=5000,  # The maximum number of epoch to run
-    dispFreq=10,  # Display to stdout the training progress every N updates
+    dispFreq=50,  # Display to stdout the training progress every N updates
     decay_c=0.,  # Weight decay for the classifier applied to the U weights.
     lrate=0.1,  # Learning rate for sgd (not used for adadelta and rmsprop)
     optimizer=adadelta,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
@@ -594,9 +600,9 @@ def train_lstm(
 
                 if uidx == 1 or numpy.mod(uidx, validFreq) == 0:
                     use_noise.set_value(0.)
-                    train_err = pred_error(f_pred, prepare_data, train, kf)
-                    valid_err = pred_error(f_pred, prepare_data, valid, kf_valid)
-                    test_err = pred_error(f_pred, prepare_data, test, kf_test)
+                    train_err, train_avg, train_avg_prod = pred_error(f_pred_prob, f_pred, prepare_data, train, kf)
+                    valid_err, valid_avg, valid_avg_prod = pred_error(f_pred_prob, f_pred, prepare_data, valid, kf_valid)
+                    test_err, test_avg, test_avg_prod = pred_error(f_pred_prob, f_pred, prepare_data, test, kf_test)
 
                     history_errs.append([valid_err, test_err])
 
@@ -605,7 +611,7 @@ def train_lstm(
                         best_p = unzip(tparams)
                         bad_counter = 0
 
-                    print('Train ', train_err, 'Valid ', valid_err, 'Test ', test_err)
+                    print('Train ', train_err, 'Valid ', valid_err, 'Test ', test_err, 'Test avg ', test_avg, 'Test avg prob ', test_avg_prod)
 
                     if (len(history_errs) > patience and
                         valid_err >= numpy.array(history_errs)[:-patience, 0].min()):
