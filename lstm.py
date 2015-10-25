@@ -220,8 +220,7 @@ def sgd(lr, tparams, grads, x, mask, y, cost, cost0):
     """
     # New set of shared variable that will contain the gradient
     # for a mini-batch.
-    gshared = [theano.shared(p.get_value() * 0., name='%s_grad' % k)
-               for k, p in tparams.iteritems()]
+    gshared = [theano.shared(p.get_value() * 0., name='%s_grad' % k) for k, p in tparams.items()]
     gsup = [(gs, g) for gs, g in zip(gshared, grads)]
 
     # Function that computes gradients for a mini-batch, but do not
@@ -319,13 +318,13 @@ def rmsprop(lr, tparams, grads, x, mask, y, cost, cost0):
 
     zipped_grads = [theano.shared(p.get_value() * numpy_floatX(0.),
                                   name='%s_grad' % k)
-                    for k, p in tparams.iteritems()]
+                    for k, p in tparams.items()]
     running_grads = [theano.shared(p.get_value() * numpy_floatX(0.),
                                    name='%s_rgrad' % k)
-                     for k, p in tparams.iteritems()]
+                     for k, p in tparams.items()]
     running_grads2 = [theano.shared(p.get_value() * numpy_floatX(0.),
                                     name='%s_rgrad2' % k)
-                      for k, p in tparams.iteritems()]
+                      for k, p in tparams.items()]
 
     zgup = [(zg, g) for zg, g in zip(zipped_grads, grads)]
     rgup = [(rg, 0.95 * rg + 0.05 * g) for rg, g in zip(running_grads, grads)]
@@ -338,9 +337,7 @@ def rmsprop(lr, tparams, grads, x, mask, y, cost, cost0):
     f_grad_shared0 = theano.function([x, mask, y], cost0,
                                     name='rmsprop_f_grad_shared')
 
-    updir = [theano.shared(p.get_value() * numpy_floatX(0.),
-                           name='%s_updir' % k)
-             for k, p in tparams.iteritems()]
+    updir = [theano.shared(p.get_value() * numpy_floatX(0.), name='%s_updir' % k) for k, p in tparams.items()]
     updir_new = [(ud, 0.9 * ud - 1e-4 * zg / tensor.sqrt(rg2 - rg ** 2 + 1e-4))
                  for ud, zg, rg, rg2 in zip(updir, zipped_grads, running_grads,
                                             running_grads2)]
@@ -566,6 +563,7 @@ def train_lstm(
                     return 1., 1., 1.
 
                 if numpy.mod(uidx, dispFreq) == 0:
+                    params = unzip(tparams)
                     print('Epoch ', eidx, 'Update ', uidx, 'Cost ', cost, 'Cost0 ', cost0, 'Wemb ', (params['Wemb']**2).sum(), 'U ', (params['U']**2).sum(), 'b ', (params['b']**2).sum(), 'lr ', end="")
                     theano.printing.Print("")(lr)
                     print(" ", lrate)
@@ -651,11 +649,24 @@ def train_lstm(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="serps modeling")
     parser.add_argument('-r', "--reload", help="reload the model", default=False, action='store_true')
+    parser.add_argument('-o', "--optimizer", help="optimizer (sgd, adadelta, rmsprop)", default='adadelta')
+    parser.add_argument('-d', "--dim", help="number of dimensions", default=40, type=int)
     args = parser.parse_args()
+
+    if args.optimizer == 'adadelta':
+        optimizer = adadelta
+    elif args.optimizer == 'sgd':
+        optimizer = sgd
+    elif args.optimizer == 'rmsprop':
+        optimizer = rmsprop
+    else:
+        raise Exception("unknown optimizer '%s'" % args.optimizer)
 
     # See function train for all possible parameter and there definition.
     train_lstm(
         max_epochs=100,
         test_size=5000,
-        reload_model=args.reload
+        reload_model=args.reload,
+        optimizer=optimizer,
+        dim_proj=args.dim
     )
