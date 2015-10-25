@@ -420,7 +420,7 @@ def pred_error(f_pred_prob, f_pred, prepare_data, data, iterator, verbose=False)
     npData1 = numpy.array(data[1])
     valid_err = 0
     sumPred = 0.0
-    sumPredprob = 0.0
+    sumPredProb = 0.0
     lenPred = 0.0
     for _, valid_index in iterator:
         x, mask, y = prepare_data([data[0][t] for t in valid_index], npData1[valid_index], maxlen=None)
