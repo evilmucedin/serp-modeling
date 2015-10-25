@@ -420,19 +420,24 @@ def pred_error(f_pred_prob, f_pred, prepare_data, data, iterator, verbose=False)
     npData1 = numpy.array(data[1])
     valid_err = 0
     sumPred = 0.0
-    sumPredProb = 0.0
+    sumPredProb1 = 0.0
     lenPred = 0.0
     for _, valid_index in iterator:
         x, mask, y = prepare_data([data[0][t] for t in valid_index], npData1[valid_index], maxlen=None)
         preds = f_pred(x, mask)
         sumPred += preds.sum()
-        sumPredProb += f_pred_prob(x, mask).sum()
+        probs = f_pred_prob(x, mask)
+        for p in probs:
+            sumPredProb1 += p[1]
         lenPred += preds.shape[0]
         targets = npData1[valid_index]
+        # print("Probs: ", probs)
+        # print("Preds: ", preds)
+        # print("Targets: ", targets)
         valid_err += (preds == targets).sum()
     valid_err = 1. - numpy_floatX(valid_err) / len(data[0])
 
-    return valid_err, sumPred/lenPred if 0 != lenPred else 0.0, sumPredProb/lenPred if 0 != lenPred else 0.0
+    return valid_err, sumPred/lenPred if 0 != lenPred else 0.0, sumPredProb1/lenPred if 0 != lenPred else 0.0
 
 
 def train_lstm(
@@ -637,17 +642,16 @@ def train_lstm(
 
     use_noise.set_value(0.)
     kf_train_sorted = get_minibatches_idx(len(train[0]), batch_size)
-    train_err = pred_error(f_pred, prepare_data, train, kf_train_sorted)
-    valid_err = pred_error(f_pred, prepare_data, valid, kf_valid)
-    test_err = pred_error(f_pred, prepare_data, test, kf_test)
+    train_err, train_avg, train_avg_prod = pred_error(f_pred_prob, f_pred, prepare_data, train, kf_train_sorted)
+    valid_err, valid_avg, valid_avg_prod = pred_error(f_pred_prob, f_pred, prepare_data, valid, kf_valid)
+    test_err, test_avg, test_avg_prod = pred_error(f_pred_prob, f_pred, prepare_data, test, kf_test)
 
     print('Train ', train_err, 'Valid ', valid_err, 'Test ', test_err)
     if saveto:
         numpy.savez(saveto, train_err=train_err,
                     valid_err=valid_err, test_err=test_err,
                     history_errs=history_errs, **best_p)
-    print('The code run for %d epochs, with %f sec/epochs' % (
-        (eidx + 1), (end_time - start_time) / (1. * (eidx + 1))))
+    print('The code run for %d epochs, with %f sec/epochs' % ((eidx + 1), (end_time - start_time) / (1. * (eidx + 1))))
     print('Training took %.1fs' % (end_time - start_time), file=sys.stderr)
     return train_err, valid_err, test_err
 
