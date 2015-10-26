@@ -412,7 +412,7 @@ def pred_probs(f_pred_prob, prepare_data, data, iterator, verbose=False):
     return probs
 
 
-def pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, data, iterator, verbose=False):
+def pred_error(f_pred_prob, f_pred, prepare_data, data, iterator, verbose=False):
     """
     Just compute the error
     f_pred: Theano fct computing the prediction
@@ -429,11 +429,11 @@ def pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, data, iterator
         preds = f_pred(x, mask)
         sumPred += preds.sum()
         probs = f_pred_prob(x, mask)
-        for p in probs:
+        for p, yt in zip(probs, y):
             sumPredProb1 += p[1]
+            sumCost += (1.0 - p[yt])**2
         lenPred += preds.shape[0]
         targets = npData1[valid_index]
-        sumCost += f_grad_shared0(x, mask, y)
         # print("Probs: ", probs)
         # print("Preds: ", preds)
         # print("Targets: ", targets)
@@ -608,9 +608,9 @@ def train_lstm(
 
                 if uidx == 1 or numpy.mod(uidx, validFreq) == 0:
                     use_noise.set_value(0.)
-                    train_err, train_avg, train_avg_prod, train_cost = pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, train, kf)
-                    valid_err, valid_avg, valid_avg_prod, valid_cost = pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, valid, kf_valid)
-                    test_err, test_avg, test_avg_prod, test_cost = pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, test, kf_test)
+                    train_err, train_avg, train_avg_prod, train_cost = pred_error(f_pred_prob, f_pred, prepare_data, train, kf)
+                    valid_err, valid_avg, valid_avg_prod, valid_cost = pred_error(f_pred_prob, f_pred, prepare_data, valid, kf_valid)
+                    test_err, test_avg, test_avg_prod, test_cost = pred_error(f_pred_prob, f_pred, prepare_data, test, kf_test)
 
                     history_errs.append([valid_err, test_err])
 
@@ -645,9 +645,9 @@ def train_lstm(
 
     use_noise.set_value(0.)
     kf_train_sorted = get_minibatches_idx(len(train[0]), batch_size)
-    train_err, train_avg, train_avg_prod, train_cost = pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, train, kf_train_sorted)
-    valid_err, valid_avg, valid_avg_prod, valid_cost = pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, valid, kf_valid)
-    test_err, test_avg, test_avg_prod, test_cost = pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, test, kf_test)
+    train_err, train_avg, train_avg_prod, train_cost = pred_error(f_pred_prob, f_pred, prepare_data, train, kf_train_sorted)
+    valid_err, valid_avg, valid_avg_prod, valid_cost = pred_error(f_pred_prob, f_pred, prepare_data, valid, kf_valid)
+    test_err, test_avg, test_avg_prod, test_cost = pred_error(f_pred_prob, f_pred, prepare_data, test, kf_test)
 
     print('Train ', train_err, 'Valid ', valid_err, 'Test ', test_err)
     if saveto:
