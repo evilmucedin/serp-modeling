@@ -15,6 +15,7 @@ import theano
 from theano import config
 import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
+import gzip
 
 import imdb
 
@@ -593,7 +594,7 @@ def train_lstm(
                     with open('%s.pkl' % saveto, 'wb') as fOut:
                         pkl.dump(model_options, fOut, -1)
                     
-                    with open("dump.txt", "w") as fOut:
+                    with gzip.open("dump.txt", "w") as fOut:
                         for i, emb in enumerate(params['Wemb']):
                             word = ""
                             if i in dic:
