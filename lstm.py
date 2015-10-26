@@ -594,7 +594,7 @@ def train_lstm(
                     with open('%s.pkl' % saveto, 'wb') as fOut:
                         pkl.dump(model_options, fOut, -1)
                     
-                    with gzip.open("dump.txt", "wb") as fOut:
+                    with gzip.open("dump.txt", "wtb") as fOut:
                         for i, emb in enumerate(params['Wemb']):
                             word = ""
                             if i in dic:
