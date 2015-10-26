@@ -422,7 +422,7 @@ def pred_error(f_grad_shared0, f_pred_prob, f_pred, prepare_data, data, iterator
     sumPred = 0.0
     sumPredProb1 = 0.0
     lenPred = 0.0
-    sumCost = 0
+    sumCost = 0.0
     for _, valid_index in iterator:
         x, mask, y = prepare_data([data[0][t] for t in valid_index], npData1[valid_index], maxlen=None)
         preds = f_pred(x, mask)
