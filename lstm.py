@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-Build a tweet sentiment analyzer
+Build a web site sentiment analyzer
 '''
 import sys
 sys.path.append(".")
