@@ -5,7 +5,7 @@ import argparse
 import random
 
 parser = argparse.ArgumentParser(description="prepare data for serps modeling")
-parser.add_argument('-l', "--limit", type=int, help="limir", default=2**32)
+parser.add_argument('-l', "--limit", type=int, help="limit", default=2**32)
 
 args = parser.parse_args()
 
@@ -35,7 +35,7 @@ for line in open("2015-10-01-False-SAT"):
     for site in sites:
         siteParts = site.split("|")
         if 3 == len(siteParts):
-            sentence.append(int(siteParts[0]))
+            sentence.append(int(siteParts[0]) + 1)
 
     if 0 != len(sentence):
         if random.randint(0, 10) < 8:
@@ -48,8 +48,9 @@ for line in open("2015-10-01-False-SAT"):
     iLine += 1
     
 revDict = {}
-revDict[0] = "<UNK>"
-index = 1
+revDict[0] = "<EMPTY>"
+revDict[1] = "<UNK>"
+index = 2
 for line in open("2015-10-01-False-TopHosts2"):
     parts = line.split("\t")
     revDict[index] = parts[0]
