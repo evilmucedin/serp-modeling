@@ -526,6 +526,7 @@ def train_lstm(
     print("%d train examples" % len(train[0]))
     print("%d valid examples" % len(valid[0]))
     print("%d test examples" % len(test[0]))
+    sys.stdout.flush()
 
     history_errs = []
     best_p = None

@@ -36,6 +36,7 @@ for line in open("2015-10-01-False-SAT"):
         siteParts = site.split("|")
         if 3 == len(siteParts):
             sentence.append(int(siteParts[0]) + 1)
+    sentence = list(reversed(sentence))
 
     if 0 != len(sentence):
         if random.randint(0, 10) < 8:
