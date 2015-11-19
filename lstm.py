@@ -9,13 +9,13 @@ from collections import OrderedDict
 import pickle as pkl
 import time
 import argparse
+import gzip
 
 import numpy
 import theano
 from theano import config
 import theano.tensor as tensor
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
-import gzip
 
 import imdb
 
@@ -102,8 +102,7 @@ def init_params(options):
                                               params,
                                               prefix=options['encoder'])
     # classifier
-    params['U'] = 0.01 * numpy.random.randn(options['dim_proj'],
-                                            options['ydim']).astype(config.floatX)
+    params['U'] = 0.01 * numpy.random.randn(options['dim_proj'], options['ydim']).astype(config.floatX)
     params['b'] = numpy.zeros((options['ydim'],)).astype(config.floatX)
 
     return params
@@ -190,18 +189,13 @@ def lstm_layer(tparams, state_below, options, prefix='lstm', mask=None):
 
         return h, c
 
-    state_below = (tensor.dot(state_below, tparams[_p(prefix, 'W')]) +
-                   tparams[_p(prefix, 'b')])
+    state_below = (tensor.dot(state_below, tparams[_p(prefix, 'W')]) + tparams[_p(prefix, 'b')])
 
     dim_proj = options['dim_proj']
     rval, updates = theano.scan(_step,
                                 sequences=[mask, state_below],
-                                outputs_info=[tensor.alloc(numpy_floatX(0.),
-                                                           n_samples,
-                                                           dim_proj),
-                                              tensor.alloc(numpy_floatX(0.),
-                                                           n_samples,
-                                                           dim_proj)],
+                                outputs_info=[tensor.alloc(numpy_floatX(0.), n_samples, dim_proj),
+                                              tensor.alloc(numpy_floatX(0.), n_samples, dim_proj)],
                                 name=_p(prefix, '_layers'),
                                 n_steps=nsteps)
     return rval[0]
@@ -364,12 +358,8 @@ def build_model(tparams, options):
     n_timesteps = x.shape[0]
     n_samples = x.shape[1]
 
-    emb = tparams['Wemb'][x.flatten()].reshape([n_timesteps,
-                                                n_samples,
-                                                options['dim_proj']])
-    proj = get_layer(options['encoder'])[1](tparams, emb, options,
-                                            prefix=options['encoder'],
-                                            mask=mask)
+    emb = tparams['Wemb'][x.flatten()].reshape([n_timesteps, n_samples, options['dim_proj']])
+    proj = get_layer(options['encoder'])[1](tparams, emb, options, prefix=options['encoder'],  mask=mask)
     if options['encoder'] == 'lstm':
         proj = (proj * mask[:, :, None]).sum(axis=0)
         proj = proj / mask.sum(axis=0)[:, None]
@@ -385,7 +375,8 @@ def build_model(tparams, options):
     if pred.dtype == 'float16':
         off = 1e-6
 
-    cost = -tensor.log(pred[tensor.arange(n_samples), y] + off).mean()
+    # cost = -tensor.log(pred[tensor.arange(n_samples), y] + off).mean()
+    cost = tensor.pow(1.0 - pred[tensor.arange(n_samples), y], 2).mean()
     costReg = cost + 0.0001*((tparams['Wemb']**2).sum() + (tparams['U']**2).sum() + (tparams['b']**2).sum())
 
     return use_noise, x, mask, y, f_pred_prob, f_pred, cost, costReg
@@ -492,6 +483,7 @@ def train_lstm(
         test = ([test[0][n] for n in idx], [test[1][n] for n in idx])
 
     ydim = numpy.max(train[1]) + 1
+    print("dim", dim_proj, "ydim", ydim)
 
     model_options['ydim'] = ydim
 
